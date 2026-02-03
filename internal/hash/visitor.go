@@ -35,7 +35,7 @@ func (m *Manager) GetHash(ctx context.Context, domain, ip, userAgent string) (st
 func (m *Manager) getSalt(ctx context.Context, date string) (string, error) {
 	var salt string
 	err := m.pool.QueryRow(ctx, "SELECT salt from daily_salts WHERE date = $1", date).Scan(&salt)
-	if err != nil {
+	if err == nil {
 		return salt, nil
 	}
 

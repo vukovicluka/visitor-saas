@@ -35,7 +35,7 @@ func New(addr string, db *storage.DB, hasher *hash.Manager) *Server {
 func (s *Server) Start() error {
 	srv := &http.Server{
 		Addr: 		s.addr,
-		Handler: 	s.mux,
+		Handler: 	cors(s.mux),
 	}
 
 	return srv.ListenAndServe()

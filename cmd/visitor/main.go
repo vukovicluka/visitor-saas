@@ -5,10 +5,13 @@ import (
 	"flag"
 	"log"
 
+	"visitor/internal/hash"
+	"visitor/internal/server"
 	"visitor/internal/storage"
 )
 
 func main() {
+	addr := flag.String("addr", ":8080", "HTTTP listen address")
 	databaseURL := flag.String("database-url", "postgres://visitor:visitor@localhost:5432/visitor?sslmode=disable", "PostgreSQL connection string")
 	flag.Parse()
 
@@ -21,5 +24,12 @@ func main() {
 	
 	defer db.Close()
 
-	log.Println("Database connected and migrated successfully")
+	hasher := hash.NewManager(db.Pool())
+
+	srv := server.New(*addr, db, hasher)
+
+	log.Printf("Listening on %s", *addr)
+	if err := srv.Start(); err != nil {
+		log.Fatalf("Server failed: %v", err)
+	}
 }

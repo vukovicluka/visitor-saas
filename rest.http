@@ -1,0 +1,7 @@
+POST http://localhost:8080/api/event HTTP/1.1
+content-type: application/json
+
+{
+    "domain": "example.com",
+    "path": "/test"
+}
