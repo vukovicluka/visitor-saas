@@ -16,3 +16,18 @@ func cors(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	}))
 }
+
+func (s *Server) auth(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if s.password != "" {
+			_, pass, ok := r.BasicAuth()
+			if !ok || pass != s.password {
+				w.Header().Set("WWW-Authenticate", `Basic realm="visitor"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

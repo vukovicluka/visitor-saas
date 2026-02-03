@@ -12,6 +12,7 @@ import (
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTTP listen address")
+	password := flag.String("password", "", "Dashboard password (empty = no auth)")
 	databaseURL := flag.String("database-url", "postgres://visitor:visitor@localhost:5432/visitor?sslmode=disable", "PostgreSQL connection string")
 	flag.Parse()
 
@@ -26,7 +27,7 @@ func main() {
 
 	hasher := hash.NewManager(db.Pool())
 
-	srv := server.New(*addr, db, hasher)
+	srv := server.New(*addr, db, hasher, *password)
 
 	log.Printf("Listening on %s", *addr)
 	if err := srv.Start(); err != nil {
