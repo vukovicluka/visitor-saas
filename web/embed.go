@@ -2,7 +2,6 @@ package web
 
 import (
 	"embed"
-	_ "embed"
 )
 
 //go:embed tracker/tracker.js
