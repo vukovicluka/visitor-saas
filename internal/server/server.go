@@ -8,6 +8,7 @@ import (
 	"visitor/internal/hash"
 	"visitor/internal/model"
 	"visitor/internal/storage"
+	"visitor/web"
 )
 
 type Server struct {
@@ -28,6 +29,7 @@ func New(addr string, db *storage.DB, hasher *hash.Manager) *Server {
 	}
 
 	s.mux.HandleFunc("POST /api/event", s.handleEvent)
+	s.mux.HandleFunc("GET /tracker.js", s.handleTracker)
 
 	return s
 }
@@ -81,4 +83,10 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
+}
+
+func (s *Server) handleTracker(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-type", "application/javascript")
+	w.Header().Set("Cache-Control", "public, max-age=86400")
+	w.Write(web.TrackerJS)
 }
