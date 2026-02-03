@@ -2,9 +2,11 @@ package server
 
 import (
 	"encoding/json"
+	"io/fs"
 	"log"
 	"net"
 	"net/http"
+	"visitor/internal/dashboard"
 	"visitor/internal/hash"
 	"visitor/internal/model"
 	"visitor/internal/storage"
@@ -30,6 +32,20 @@ func New(addr string, db *storage.DB, hasher *hash.Manager) *Server {
 
 	s.mux.HandleFunc("POST /api/event", s.handleEvent)
 	s.mux.HandleFunc("GET /tracker.js", s.handleTracker)
+
+	dash := dashboard.NewHandler(dashboard.NewQueries(db.Pool()))
+	s.mux.HandleFunc("GET /api/stats/summary", dash.HandleSummary)
+	s.mux.HandleFunc("GET /api/stats/pages", dash.HandlePages)
+	s.mux.HandleFunc("GET /api/stats/referrers", dash.HandleReferrers)
+
+	staticFS, _ := fs.Sub(web.StaticFS, "static")
+	s.mux.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.FS(staticFS))))
+
+	s.mux.HandleFunc("GET /dashboard", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text-html")
+		data, _ := web.StaticFS.ReadFile("static/dashboard.html")
+		w.Write(data)
+	})
 
 	return s
 }

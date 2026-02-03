@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Visitor Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <h1>Visitor</h1>
+        <div class="controls">
+          <input
+            type="text"
+            id="domain"
+            placeholder="domain"
+            value="localhost"
+          />
+          <div class="periods">
+            <button data-period="today">Today</button>
+            <button data-period="7d" class="active">7d</button>
+            <button data-period="30d">30d</button>
+            <button data-period="12m">12m</button>
+          </div>
+        </div>
+      </header>
+
+      <section class="summary">
+        <div class="stat-card">
+          <span class="stat-value" id="total-views">-</span>
+          <span class="stat-label">Total Views</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value" id="unique-visitors">-</span>
+          <span class="stat-label">Unique Visitors</span>
+        </div>
+      </section>
+
+      <section class="chart-section">
+        <h2>Views per day</h2>
+        <div class="chart" id="chart"></div>
+      </section>
+
+      <div class="tables">
+        <section class="table-section">
+          <h2>Top Pages</h2>
+          <table id="pages-table">
+            <thead>
+              <tr>
+                <th>Path</th>
+                <th>Views</th>
+                <th>Visitors</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+
+        <section class="table-section">
+          <h2>Top Referrers</h2>
+          <table id="referrers-table">
+            <thead>
+              <tr>
+                <th>Referrer</th>
+                <th>Views</th>
+                <th>Visitors</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </section>
+      </div>
+    </div>
+    <script src="/static/dashboard.js"></script>
+  </body>
+</html>
