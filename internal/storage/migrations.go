@@ -26,6 +26,9 @@ func (db *DB) migrate(ctx context.Context) error {
 		`CREATE INDEX IF NOT EXISTS idx_page_views_visitor
 			ON page_views(domain, visitor_hash, created_at)`,
 
+		`CREATE UNIQUE INDEX IF NOT EXISTS idx_page_views_unique_visit
+    		ON page_views(domain, path, visitor_hash, created_at::date)`,
+
 		`CREATE TABLE IF NOT EXISTS daily_salts (
 			date DATE PRIMARY KEY,
 			salt TEXT NOT NULL
