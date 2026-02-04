@@ -45,7 +45,7 @@ func (db *DB) InsertPageView(ctx context.Context, pv *model.PageView) error {
 	_, err := db.pool.Exec(ctx,
 		`INSERT INTO page_views (domain, path, referrer, country_code, visitor_hash)
 		VALUES ($1, $2, $3, $4, $5)
-		ON CONFLICT (domain, path, visitor_hash, (CAST(created_at AS date))) DO NOTHING`,
+		ON CONFLICT (domain, path, visitor_hash, (created_at::date)) DO NOTHING`,
 		pv.Domain, pv.Path, pv.Referrer, pv.CountryCode, pv.VisitorHash)
 
 	return err
