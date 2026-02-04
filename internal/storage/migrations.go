@@ -26,8 +26,12 @@ func (db *DB) migrate(ctx context.Context) error {
 		`CREATE INDEX IF NOT EXISTS idx_page_views_visitor
 			ON page_views(domain, visitor_hash, created_at)`,
 
+		`CREATE OR REPLACE FUNCTION immutable_date(ts TIMESTAMPTZ) RETURNS DATE AS $$
+			SELECT (ts AT TIME ZONE 'UTC')::date;
+		$$ LANGUAGE SQL IMMUTABLE`,
+
 		`CREATE UNIQUE INDEX IF NOT EXISTS idx_page_views_unique_visit
-    		ON page_views(domain, path, visitor_hash, (created_at::date))`,
+			ON page_views(domain, path, visitor_hash, immutable_date(created_at))`,
 
 		`CREATE TABLE IF NOT EXISTS daily_salts (
 			date DATE PRIMARY KEY,
