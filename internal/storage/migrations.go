@@ -37,6 +37,10 @@ func (db *DB) migrate(ctx context.Context) error {
 			date DATE PRIMARY KEY,
 			salt TEXT NOT NULL
 		)`,
+
+		`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS screen_size TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS browser TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE page_views ADD COLUMN IF NOT EXISTS os TEXT NOT NULL DEFAULT ''`,
 	}
 
 	for _, m := range migrations {

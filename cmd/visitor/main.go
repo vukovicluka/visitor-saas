@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"visitor/internal/geoip"
 	"visitor/internal/hash"
 	"visitor/internal/server"
 	"visitor/internal/storage"
@@ -22,6 +23,7 @@ func main() {
 	addr := flag.String("addr", envOrDefault("ADDR", ":8080"), "HTTTP listen address")
 	password := flag.String("password", envOrDefault("PASSWORD", ""), "Dashboard password (empty = no auth)")
 	databaseURL := flag.String("database-url", envOrDefault("DATABASE_URL", "postgres://visitor:visitor@localhost:5432/visitor?sslmode=disable"), "PostgreSQL connection string")
+
 	flag.Parse()
 
 	ctx := context.Background()
@@ -35,7 +37,10 @@ func main() {
 
 	hasher := hash.NewManager(db.Pool())
 
-	srv := server.New(*addr, db, hasher, *password)
+	geo := geoip.New("GeoLite2-Country.mmdb")
+	defer geo.Close()
+
+	srv := server.New(*addr, db, hasher, geo, *password)
 
 	log.Printf("Listening on %s", *addr)
 	if err := srv.Start(); err != nil {

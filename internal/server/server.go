@@ -7,10 +7,13 @@ import (
 	"net"
 	"net/http"
 	"visitor/internal/dashboard"
+	"visitor/internal/geoip"
 	"visitor/internal/hash"
 	"visitor/internal/model"
 	"visitor/internal/storage"
 	"visitor/web"
+
+	"github.com/mssola/useragent"
 )
 
 type Server struct {
@@ -18,10 +21,11 @@ type Server struct {
 	db 			*storage.DB
 	hasher 		*hash.Manager
 	mux 		*http.ServeMux
+	geoip		*geoip.Resolver
 	password 	string
 }
 
-func New(addr string, db *storage.DB, hasher *hash.Manager, password string) *Server {
+func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolver,password string) *Server {
 	mux := http.NewServeMux()
 
 	s := &Server{
@@ -29,6 +33,7 @@ func New(addr string, db *storage.DB, hasher *hash.Manager, password string) *Se
 		db: 		db,
 		hasher: 	hasher,
 		mux: 		mux,
+		geoip: 		geoip,
 		password: 	password,
 	}
 
@@ -74,10 +79,11 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip, _, err := net.SplitHostPort(r.RemoteAddr)
-	if err != nil {
-		ip = r.RemoteAddr
+	ip := r.Header.Get("Fly-Client-IP") // because of Fly.io deployment
+	if ip == "" {
+		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
+
 
 	userAgent := r.Header.Get("User-Agent")
 
@@ -88,10 +94,20 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	countryCode := s.geoip.Country(ip)
+
+	ua := useragent.New(userAgent)
+	browser, _ := ua.Browser()
+	os := ua.OS()
+
 	pv := &model.PageView{
 		Domain: 		event.Domain,
 		Path: 			event.Path,
 		Referrer: 		event.Referrer,
+		CountryCode: 	countryCode,	
+		ScreenSize: 	event.ScreenSize,
+		Browser:        browser,
+		OS: 			os,	
 		VisitorHash: 	visitorHash,
 	}
 

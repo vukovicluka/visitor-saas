@@ -43,10 +43,10 @@ func (db *DB) Close() {
 
 func (db *DB) InsertPageView(ctx context.Context, pv *model.PageView) error {
 	_, err := db.pool.Exec(ctx,
-		`INSERT INTO page_views (domain, path, referrer, country_code, visitor_hash)
-		VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO page_views (domain, path, referrer, country_code, screen_size, browser, os, visitor_hash)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT (domain, path, visitor_hash, immutable_date(created_at)) DO NOTHING`,
-		pv.Domain, pv.Path, pv.Referrer, pv.CountryCode, pv.VisitorHash)
+		pv.Domain, pv.Path, pv.Referrer, pv.CountryCode, pv.ScreenSize, pv.Browser, pv.OS, pv.VisitorHash)
 
 	return err
 }

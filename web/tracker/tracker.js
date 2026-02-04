@@ -7,6 +7,7 @@
       domain: location.hostname,
       path: location.pathname,
       referrer: document.referrer,
+      screen_size: window.screen.width + "x" + window.screen.height,
     });
     if (navigator.sendBeacon) {
       navigator.sendBeacon(endpoint, payload);
