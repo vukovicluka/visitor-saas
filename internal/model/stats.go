@@ -23,3 +23,9 @@ type ReferrerStats struct {
 	Views		int			`json:"views"`
 	Visitors	int			`json:"visitors"`
 }
+
+type DimensionStats struct {
+	Label		string		`json:"label"`
+	Views		int			`json:"views"`
+	Visitors	int			`json:"visitors"`
+}

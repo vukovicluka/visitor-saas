@@ -1,6 +1,16 @@
 (function () {
   "use strict";
 
+  var countryNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+  function countryLabel(code) {
+    try {
+      return countryNames.of(code) + " (" + code + ")";
+    } catch (e) {
+      return code;
+    }
+  }
+
   const domain = document.getElementById("domain");
   let period = "7d";
 
@@ -44,6 +54,41 @@
       })
       .then(function (data) {
         renderTable("referrers-table", data || []);
+      });
+
+    fetch("/api/stats/locations" + q)
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        (data || []).forEach(function (d) {
+          d.label = countryLabel(d.label);
+        });
+        renderTable("locations-table", data || []);
+      });
+
+    fetch("/api/stats/sizes" + q)
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        renderTable("sizes-table", data || []);
+      });
+
+    fetch("/api/stats/browsers" + q)
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        renderTable("browsers-table", data || []);
+      });
+
+    fetch("/api/stats/systems" + q)
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        renderTable("systems-table", data || []);
       });
   }
 

@@ -63,6 +63,70 @@ func (h *Handler) HandleReferrers(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, refs)
 }
 
+func (h *Handler) HandleLocations(w http.ResponseWriter, r *http.Request) {
+	domain, days := parseParams(r)
+	if domain == "" {
+		http.Error(w, "domain is required", http.StatusBadRequest)
+		return
+	}
+
+	data, err := h.queries.Locations(r.Context(), domain, days)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
+func (h *Handler) HandleSizes(w http.ResponseWriter, r *http.Request) {
+	domain, days := parseParams(r)
+	if domain == "" {
+		http.Error(w, "domain is required", http.StatusBadRequest)
+		return
+	}
+
+	data, err := h.queries.Sizes(r.Context(), domain, days)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
+func (h *Handler) HandleBrowsers(w http.ResponseWriter, r *http.Request) {
+	domain, days := parseParams(r)
+	if domain == "" {
+		http.Error(w, "domain is required", http.StatusBadRequest)
+		return
+	}
+
+	data, err := h.queries.Browsers(r.Context(), domain, days)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
+func (h *Handler) HandleSystems(w http.ResponseWriter, r *http.Request) {
+	domain, days := parseParams(r)
+	if domain == "" {
+		http.Error(w, "domain is required", http.StatusBadRequest)
+		return
+	}
+
+	data, err := h.queries.Systems(r.Context(), domain, days)
+	if err != nil {
+		http.Error(w, "internal error", http.StatusInternalServerError)
+		return
+	}
+
+	writeJSON(w, data)
+}
+
 func parseParams(r *http.Request) (string, int) {
 	domain := r.URL.Query().Get("domain")
 	period := r.URL.Query().Get("period")

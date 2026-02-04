@@ -44,6 +44,11 @@ func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolve
 	s.mux.Handle("GET /api/stats/summary", s.auth(http.HandlerFunc(dash.HandleSummary)))
 	s.mux.Handle("GET /api/stats/pages", s.auth(http.HandlerFunc(dash.HandlePages)))
 	s.mux.Handle("GET /api/stats/referrers", s.auth(http.HandlerFunc(dash.HandleReferrers)))
+	s.mux.Handle("GET /api/stats/locations", s.auth(http.HandlerFunc(dash.HandleLocations)))
+	s.mux.Handle("GET /api/stats/sizes", s.auth(http.HandlerFunc(dash.HandleSizes)))
+	s.mux.Handle("GET /api/stats/browsers", s.auth(http.HandlerFunc(dash.HandleBrowsers)))
+	s.mux.Handle("GET /api/stats/systems", s.auth(http.HandlerFunc(dash.HandleSystems)))
+
 
 
 	staticFS, _ := fs.Sub(web.StaticFS, "static")
