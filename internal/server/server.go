@@ -84,6 +84,8 @@ func (s *Server) Start() error {
 }
 
 func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 10<<10) // 10KB
+
 	var event model.EventRequest
 	if err := json.NewDecoder(r.Body).Decode(&event); err != nil {
 		http.Error(w, "Invalid JSON body", http.StatusBadRequest)
