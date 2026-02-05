@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"strings"
 	"visitor/internal/dashboard"
 	"visitor/internal/geoip"
 	"visitor/internal/hash"
@@ -17,24 +18,34 @@ import (
 )
 
 type Server struct {
-	addr		string
-	db 			*storage.DB
-	hasher 		*hash.Manager
-	mux 		*http.ServeMux
-	geoip		*geoip.Resolver
-	password 	string
+	addr			string
+	db 				*storage.DB
+	hasher 			*hash.Manager
+	mux 			*http.ServeMux
+	geoip			*geoip.Resolver
+	password 		string
+	allowedDomains 	map[string]bool
 }
 
-func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolver,password string) *Server {
+func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolver,password string, allowedDomains string) *Server {
 	mux := http.NewServeMux()
 
+	domains := make(map[string]bool)
+	for d := range strings.SplitSeq(allowedDomains, ",") {
+		d = strings.TrimSpace(d)
+		if d != "" {
+			domains[d] = true
+		}
+	}
+
 	s := &Server{
-		addr: 		addr,
-		db: 		db,
-		hasher: 	hasher,
-		mux: 		mux,
-		geoip: 		geoip,
-		password: 	password,
+		addr: 			addr,
+		db: 			db,
+		hasher: 		hasher,
+		mux: 			mux,
+		geoip: 			geoip,
+		password: 		password,
+		allowedDomains: domains,
 	}
 
 	s.mux.HandleFunc("POST /api/event", s.handleEvent)
@@ -66,7 +77,7 @@ func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolve
 func (s *Server) Start() error {
 	srv := &http.Server{
 		Addr: 		s.addr,
-		Handler: 	cors(s.mux),
+		Handler: 	s.cors(s.mux),
 	}
 
 	return srv.ListenAndServe()
@@ -84,11 +95,21 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if !s.isAllowedDomain(event.Domain) {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
+	origin := r.Header.Get("Origin")
+	if origin != "" && origin != "http://"+event.Domain && origin != "https://"+event.Domain {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return
+	}
+
 	ip := r.Header.Get("Fly-Client-IP") // because of Fly.io deployment
 	if ip == "" {
 		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
 	}
-
 
 	userAgent := r.Header.Get("User-Agent")
 
@@ -129,4 +150,11 @@ func (s *Server) handleTracker(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-type", "application/javascript")
 	w.Header().Set("Cache-Control", "public, max-age=86400")
 	w.Write(web.TrackerJS)
+}
+
+func (s *Server) isAllowedDomain(domain string) bool {
+    if len(s.allowedDomains) == 0 {
+        return true
+    }
+    return s.allowedDomains[domain]
 }

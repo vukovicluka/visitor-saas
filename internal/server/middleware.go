@@ -2,9 +2,20 @@ package server
 
 import "net/http"
 
-func cors(next http.Handler) http.Handler {
+func (s *Server) cors(next http.Handler) http.Handler {
 	return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
+		origin := r.Header.Get("Origin")
+
+		if origin != "" {
+			for domain := range s.allowedDomains {
+				if origin == "http://"+domain || origin == "https://"+domain {
+					w.Header().Set("Access-Control-Allow-Origin", origin)
+					w.Header().Set("Vary", "Origin")
+					break
+				}
+			}
+		}
+
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 

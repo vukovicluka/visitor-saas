@@ -23,6 +23,8 @@ func main() {
 	addr := flag.String("addr", envOrDefault("ADDR", ":8080"), "HTTTP listen address")
 	password := flag.String("password", envOrDefault("PASSWORD", ""), "Dashboard password (empty = no auth)")
 	databaseURL := flag.String("database-url", envOrDefault("DATABASE_URL", "postgres://visitor:visitor@localhost:5432/visitor?sslmode=disable"), "PostgreSQL connection string")
+	allowedDomains := flag.String("allowed-domains", envOrDefault("ALLOWED_DOMAINS", ""), "Comma-separated list of allowed domains (empty = allow all)")
+
 
 	flag.Parse()
 
@@ -40,7 +42,7 @@ func main() {
 	geo := geoip.New("GeoLite2-Country.mmdb")
 	defer geo.Close()
 
-	srv := server.New(*addr, db, hasher, geo, *password)
+	srv := server.New(*addr, db, hasher, geo, *password, *allowedDomains)
 
 	log.Printf("Listening on %s", *addr)
 	if err := srv.Start(); err != nil {
