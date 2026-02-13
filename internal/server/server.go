@@ -25,6 +25,7 @@ type Server struct {
 	geoip			*geoip.Resolver
 	password 		string
 	allowedDomains 	map[string]bool
+	limiter			*rateLimiter
 }
 
 func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolver,password string, allowedDomains string) *Server {
@@ -46,9 +47,10 @@ func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolve
 		geoip: 			geoip,
 		password: 		password,
 		allowedDomains: domains,
+		limiter: 		newRateLimiter(5, 10),
 	}
 
-	s.mux.HandleFunc("POST /api/event", s.handleEvent)
+	s.mux.Handle("POST /api/event", s.limiter.middleware(http.HandlerFunc(s.handleEvent)))
 	s.mux.HandleFunc("GET /tracker.js", s.handleTracker)
 
 	dash := dashboard.NewHandler(dashboard.NewQueries(db.Pool()))
