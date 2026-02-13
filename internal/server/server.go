@@ -108,10 +108,7 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip := r.Header.Get("Fly-Client-IP") // because of Fly.io deployment
-	if ip == "" {
-		ip, _, _ = net.SplitHostPort(r.RemoteAddr)
-	}
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
 
 	userAgent := r.Header.Get("User-Agent")
 
