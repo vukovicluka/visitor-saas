@@ -7,6 +7,7 @@ import (
 	"net"
 	"net/http"
 	"strings"
+	"time"
 	"visitor/internal/dashboard"
 	"visitor/internal/geoip"
 	"visitor/internal/hash"
@@ -78,8 +79,11 @@ func New(addr string, db *storage.DB, hasher *hash.Manager, geoip *geoip.Resolve
 
 func (s *Server) Start() error {
 	srv := &http.Server{
-		Addr: 		s.addr,
-		Handler: 	s.cors(s.mux),
+		Addr: 			s.addr,
+		Handler: 		s.cors(s.mux),
+		ReadTimeout: 	5 * time.Second,
+		WriteTimeout: 	10 * time.Second,
+		IdleTimeout: 	120 * time.Second,
 	}
 
 	return srv.ListenAndServe()
