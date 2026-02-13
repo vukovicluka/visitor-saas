@@ -1,6 +1,8 @@
 services:
   visitor:
-    build: .
+    build:
+      context: .
+      network: host
     container_name: visitor-app
     restart: unless-stopped
     ports:
