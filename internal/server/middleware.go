@@ -1,6 +1,9 @@
 package server
 
-import "net/http"
+import (
+	"crypto/subtle"
+	"net/http"
+)
 
 func (s *Server) cors(next http.Handler) http.Handler {
 	return http.HandlerFunc((func(w http.ResponseWriter, r *http.Request) {
@@ -32,7 +35,7 @@ func (s *Server) auth(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if s.password != "" {
 			_, pass, ok := r.BasicAuth()
-			if !ok || pass != s.password {
+			if !ok || subtle.ConstantTimeCompare([]byte(pass), []byte(s.password)) != 1 {
 				w.Header().Set("WWW-Authenticate", `Basic realm="visitor"`)
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
