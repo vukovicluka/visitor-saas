@@ -1,14 +1,12 @@
 services:
-  postgres:
-    image: postgres:17-alpine
-    environment:
-      POSTGRES_USER: visitor
-      POSTGRES_PASSWORD: visitor
-      POSTGRES_DB: visitor
+  visitor:
+    build: .
+    container_name: visitor-app
+    restart: unless-stopped
     ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - PORT=8080
+      - ENV=production
