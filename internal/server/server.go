@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 	"visitor/internal/dashboard"
@@ -17,6 +18,8 @@ import (
 
 	"github.com/mssola/useragent"
 )
+
+var screenSizeRe = regexp.MustCompile(`^\d+x\d+$`)
 
 type Server struct {
 	addr			string
@@ -98,8 +101,8 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if event.Domain == "" {
-		http.Error(w, "Domain is required", http.StatusBadRequest)
+	if !validateInputData(event.Domain, event.Path, event.Referrer, event.ScreenSize) {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
@@ -126,7 +129,6 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	countryCode := s.geoip.Country(ip)
-
 	ua := useragent.New(userAgent)
 	browser, _ := ua.Browser()
 	os := ua.OS()
@@ -135,8 +137,8 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		Domain: 		event.Domain,
 		Path: 			event.Path,
 		Referrer: 		event.Referrer,
-		CountryCode: 	countryCode,	
 		ScreenSize: 	event.ScreenSize,
+		CountryCode: 	countryCode,	
 		Browser:        browser,
 		OS: 			os,	
 		VisitorHash: 	visitorHash,
@@ -162,4 +164,20 @@ func (s *Server) isAllowedDomain(domain string) bool {
         return true
     }
     return s.allowedDomains[domain]
+}
+
+func validateInputData(domain string, path string, referrer string, screenSize string) bool {
+	if domain == "" || len(domain) > 253 {
+		return false
+	}
+	if !strings.HasPrefix(path, "/") || len(path) > 2048 {
+		return false
+	}
+	if len(referrer) > 2048 {
+		return false
+	}
+	if screenSize != "" && !screenSizeRe.MatchString(screenSize) {
+		return false
+	}
+	return true
 }
