@@ -7,6 +7,6 @@ The idea behind Visitor was to have my own simple analytics tool which would col
 
 # Building docker image
 
-`docker build -t fra.ocir.io/<namespace>/visitor:latest .`
+`docker build --platform linux/amd64 -t fra.ocir.io/<namespace>/visitor:latest .`
 
 `docker push fra.ocir.io/<namespace>/visitor:latest`
