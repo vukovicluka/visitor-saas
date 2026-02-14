@@ -112,7 +112,7 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	origin := r.Header.Get("Origin")
-	if origin != "" && origin != "http://"+event.Domain && origin != "https://"+event.Domain {
+	if origin != "http://"+event.Domain && origin != "https://"+event.Domain {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return
 	}
