@@ -16,5 +16,5 @@
     }
   }
 
-  send();
+  window.trackVisit = send;
 })();
