@@ -117,7 +117,7 @@ func (s *Server) handleEvent(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	ip := extractIP(r)
 
 	userAgent := r.Header.Get("User-Agent")
 
@@ -164,6 +164,17 @@ func (s *Server) isAllowedDomain(domain string) bool {
         return true
     }
     return s.allowedDomains[domain]
+}
+
+func extractIP(r *http.Request) string {
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		if i := strings.IndexByte(xff, ','); i != -1 {
+			return strings.TrimSpace(xff[:i])
+		}
+		return strings.TrimSpace(xff)
+	}
+	ip, _, _ := net.SplitHostPort(r.RemoteAddr)
+	return ip
 }
 
 func validateInputData(domain string, path string, referrer string, screenSize string) bool {
